@@ -51,7 +51,15 @@ torch.manual_seed(1337)
 
 # Load the processor and model
 processor = AutoProcessor.from_pretrained("facebook/seamless-m4t-v2-large", src_lang="ron")
-model = SeamlessM4Tv2Model.from_pretrained("facebook/seamless-m4t-v2-large")
+class AudioTextModel(nn.Module):
+    def __init__(self, base_model):
+        super().__init__()
+        self.base_model = base_model
+
+    def forward(self, audio, input_ids, attention_mask, labels=None):
+        outputs = self.base_model(audio=audio, input_ids=input_ids, attention_mask=attention_mask, labels=labels)
+        return outputs
+model = AudioTextModel(SeamlessM4Tv2Model.from_pretrained("facebook/seamless-m4t-v2-large"))
 
 # Extract sentences (text) and audio data
 X_text = [sample["sentence"] for sample in data_set]
@@ -103,15 +111,7 @@ class AudioTextDataset(torch.utils.data.Dataset):
 # Create Dataset instances
 train_dataset = AudioTextDataset(X_audio_train, X_text_train, y_train)
 test_dataset = AudioTextDataset(X_audio_test, X_text_test, y_test)
-class AudioTextModel(nn.Module):
-    def __init__(self, base_model):
-        super().__init__()
-        self.base_model = base_model
 
-    def forward(self, audio, input_ids, attention_mask, labels=None):
-        outputs = self.base_model(audio=audio, input_ids=input_ids, attention_mask=attention_mask, labels=labels)
-        return outputs
-model = AudioTextModel(SeamlessM4Tv2Model.from_pretrained("facebook/seamless-m4t-v2-large"))
 # Define training arguments
 training_args = TrainingArguments(
     output_dir='./results',
