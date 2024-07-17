@@ -17,7 +17,7 @@ from sklearn.model_selection import train_test_split
 from huggingface_hub import HfApi, HfFolder
 
 # Your token from the Hugging Face account
-hf_token = "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"
+hf_token = ""
 
 # Save the token to the Hugging Face cache folder
 HfFolder.save_token(hf_token)
